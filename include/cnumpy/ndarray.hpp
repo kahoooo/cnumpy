@@ -55,6 +55,11 @@ namespace cnumpy {
       std::exclusive_scan(shape.rbegin(), shape.rend(), strides_.rbegin(), 1, std::multiplies<size_t>());
     }
 
+    template<typename... Ints>
+    ndarray_impl(Ints... ints) : ndarray_impl(C{size_t(ints)...}) {
+      static_assert((std::is_integral<Ints>() && ...));
+    }
+
     const T* data() const noexcept { return data_; }
     T* data() noexcept { return data_; }
 
@@ -73,6 +78,17 @@ namespace cnumpy {
 
     T &operator[](const C &ndindex) {
       return const_cast<T &>(static_cast<const ndarray_impl<T, C> &>(*this)[ndindex]);
+    }
+
+    template<typename... Ints>
+    const T &operator()(Ints... ints) const {
+      static_assert((std::is_integral<Ints>() && ...));
+      return operator[](C{size_t(ints)...});
+    }
+
+    template<typename... Ints>
+    T &operator()(Ints... ints) {
+      return const_cast<T &>(static_cast<const ndarray_impl<T, C> &>(*this)(ints...));
     }
 
     friend void swap(ndarray_impl<T, C> &first, ndarray_impl<T, C> &second) {
