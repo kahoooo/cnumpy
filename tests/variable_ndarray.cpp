@@ -10,7 +10,6 @@ int main() {
   {
     ndarray<int> arr;
     assert(arr.size() == 0);
-    // static_assert(arr.size() == 0);
   }
 
   // constructor with explicit shape array, 120 elements expected
