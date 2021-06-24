@@ -38,7 +38,7 @@ namespace cnumpy {
       return *this;
     }
 
-    // copy-assignment operator
+    // move-assignment operator
     ndarray_impl &operator=(ndarray_impl<T, C> &&arr) {
       swap(*this, arr);
       return *this;
@@ -67,6 +67,20 @@ namespace cnumpy {
     size_t ndim() const noexcept { return shape_.size(); }
     const C &shape() const noexcept { return shape_; }
     const C &strides() const noexcept { return strides_; }
+
+    void reshape(const C &shape) {
+      size_t size = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
+      if (size != size_)
+        throw std::runtime_error("ndarray_impl<T, C>::reshape(): sizes do not match");
+      shape_ = shape;
+      std::exclusive_scan(shape.rbegin(), shape.rend(), strides_.rbegin(), 1, std::multiplies<size_t>());
+    }
+
+    template<typename... Ints>
+    void reshape(Ints... ints) {
+      static_assert((std::is_integral<Ints>() && ...));
+      reshape(C{size_t(ints)...});
+    }
 
     // indexing
     const T &operator[](const C &ndindex) const {
