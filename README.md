@@ -109,10 +109,10 @@ ndarray<int, 3> another_three_d_farray_moved = ndarray<int, 3>(2, 3, 4);
 
 #### Indexing
 
-Indexing can be achieved by providing indices as an `array<size_t, N>` for f-arrays or a `vector<size_t>` for v-arrays to `operator[]`. Alternatively, pass the indices as separated arguements to `operator()`. Unspecified indices are implicitly set to zeros.
+Indexing can be achieved by providing indices as an `array<size_t, N>` for f-arrays or a `vector<size_t>` for v-arrays to `operator[]`. Alternatively, pass the indices as separated arguments to `operator()`. Unspecified indices are implicitly set to zeros.
 ```c++
-&three_d_farray[{i, j, 0, 0}] == &three_d_farray[{i, j}];   // returns true;
-&three_d_farray(i, j, k, 0) == &three_d_farray[{i, j, k}];  // returns true;
+&three_d_farray[{i, j, 0, 0}] == &three_d_farray[{i, j}]; // returns true;
+&three_d_farray(i, j, k, 0) == &three_d_farray(i, j, k);  // returns true;
 ```
 
 #### Reshaping, Slicing, Shared Memory...
