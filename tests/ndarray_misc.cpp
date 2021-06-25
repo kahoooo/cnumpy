@@ -33,6 +33,32 @@ int main() {
     }
   }
 
+  {
+    ndarray<int> arr(2, 3, 4, 5);
+    size_t cnt = 0;
+    for (size_t i = 0; i < 2; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        for (size_t k = 0; k < 4; k++) {
+          for (size_t l = 0; l < 5; l++) {
+            arr(i, j, k, l) = cnt++;
+          }
+        }
+      }
+    }
+    arr.reshape(6, 4, 5);
+    cnt = 0;
+    for (size_t i = 0; i < 1; i++) {
+      for (size_t j = 0; j < 6; j++) {
+        for (size_t k = 0; k < 4; k++) {
+          for (size_t l = 0; l < 5; l++) {
+            assert(arr(j, k, l) == cnt);
+            cnt++;
+          }
+        }
+      }
+    }
+  }
+
   // shared ndarray
   {
     ndarray<int, 4> arr1(2, 3, 4, 5);

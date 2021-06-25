@@ -73,6 +73,7 @@ namespace cnumpy {
       if (size != size_)
         throw std::runtime_error("ndarray_impl<T, Container>::reshape(): sizes do not match");
       shape_ = shape;
+      strides_ = shape;
       std::exclusive_scan(shape.rbegin(), shape.rend(), strides_.rbegin(), 1, std::multiplies<size_t>());
     }
 
