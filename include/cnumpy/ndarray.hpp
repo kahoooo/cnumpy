@@ -20,6 +20,8 @@ namespace cnumpy {
     using value_type = T;
     using container_type = Container;
 
+    static_assert(std::is_same<typename container_type::value_type, size_t>());
+
     // default constructor
     ndarray_impl() : size_(0), shape_{}, strides_{}, data_(nullptr), shared_data_(data_) {};
 
