@@ -30,27 +30,50 @@ All classes and functions are declared and implemented in the namespace `cnumpy`
 
 There are two types of multidimensional arrays: fixed- and variable-dimensional arrays (hereafter, f- and v-arrays). F-arrays are multidimensional arrays that have fixed numbers of dimensions while v-arrays have variable numbers of dimensions. Same interfaces are provided for both f- and v-arrays but have different restrictions. In general, f-arrays are superior to v-arrays in terms of performance if the numbers of dimensions are known while v-arrays are more flexible.
 
-| Member functions                                | Description                                                                    |
-| ----------------------------------------------- | ------------------------------------------------------------------------------ |
-| `const T* data() const noexcept;`               | Returns a direct pointer to the memory array used internally                   |
-| `T* data();`                                    | Same as above                                                                  |
-| `size_t size() const noexcept;`                 | Returns the number of elements in the array                                    |
-| `size_t ndim() const noexcept;`                 | Returns the number of array dimensions                                         |
-| `const C &shape() const noexcept;`              | Returns the array dimensions                                                   |
-| `const C &strides() const noexcept;`            | Returns number of elements to step in each dimension when traversing the array |
-| `const T &operator[](const C &ndindex) const;`  | Returns a reference to the element at the position in the array                |
-| `T &operator[](const C &ndindex);`              | Same as above                                                                  |
-| `const T &operator()(Ints... ints) const;`      | Same as above                                                                  |
-| `T &operator()(Ints... ints);`                  | Same as above                                                                  |
 
-| Non-member functions                            | Description                                                                    |
-| ----------------------------------------------  | ------------------------------------------------------------------------------ |
-| `void swap(ndarray<T, N> &x, ndarray<T, N> &y)` | Exchange the contents of x with those of y                                     |
+Defined in `cnumpy/ndarray.hpp`:
+```c++
+template<class T, class Container = std::vector<size_t>>
+class ndarray_impl;
+
+template<class T, size_t N = size_t(-1)>
+using ndarray = ndarray_impl<T, std::conditional_t<N == -1, std::vector<size_t>, std::array<size_t, N>>>;
+```
+
+| Member types   | Definition |
+| -------------- | ---------- |
+| value_type     | T          |
+| container_type | Container  |
+
+| Member functions                                                             | Description                                                                    |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `const value_type* data() const noexcept;`                                   | Returns a direct pointer to the memory array used internally                   |
+| `value_type* data();`                                                        | Same as above                                                                  |
+| `size_t size() const noexcept;`                                              | Returns the number of elements in the array                                    |
+| `size_t ndim() const noexcept;`                                              | Returns the number of array dimensions                                         |
+| `const container_type &shape() const noexcept;`                              | Returns the array dimensions                                                   |
+| `const container_type &strides() const noexcept;`                            | Returns number of elements to step in each dimension when traversing the array |
+| `void reshape(const container_type &shape);`                                 | Modify the array dimensions                                                    |
+| `void reshape(Ints... ints);`                                                | Same as above                                                                  |
+| `const value_type &operator[](const container_type &ndindex) const;`         | Returns a reference to the element at the position in the array                |
+| `value_type &operator[](const container_type &ndindex);`                     | Same as above                                                                  |
+| `const value_type &operator()(Ints... ints) const;`                          | Same as above                                                                  |
+| `value_type &operator()(Ints... ints);`                                      | Same as above                                                                  |
+| `ndarray_impl<value_type, Container_> make_shared(const Container_ &shape);` | Returns a copy of shared array                                                 |
+| `NDArray make_shared<NDArray>(Ints... ints);`                                | Same as above                                                                  |
+
+| Non-member functions                                                                                   | Description                                |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| `void swap(ndarray_impl<value_type, container_type> &x, ndarray_impl<value_type, container_type> &y);` | Exchange the contents of x with those of y |
 
 * `T`: type of elements
-* `C`: container used to store dimension information (`array<size_t, N>` for f-arrays, `vector<size_t>` for v-arrays)
+* `Container`: container used to store dimension information (`array<size_t, N>` for f-arrays, `vector<size_t>` for v-arrays)
 * `N`: number of dimension (`SIZE_MAX` for v-arrays)
 * `Ints`: any integral type
+
+
+* `NDArray`: type of returned array
+* `Container_`: container used by the returned array
 
 #### Construction
 
