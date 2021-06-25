@@ -4,6 +4,7 @@
 #include <array>
 #include <functional>   // multiplies
 #include <limits>       // numeric_limits
+#include <memory>       // shared_ptr
 #include <numeric>      // accumulate, exclusive_scan
 #include <type_traits>  // conditional_t
 #include <vector>
@@ -20,11 +21,11 @@ namespace cnumpy {
     using container_type = Container;
 
     // default constructor
-    ndarray_impl() : size_(0), data_(nullptr), shape_{}, strides_{} {};
+    ndarray_impl() : size_(0), shape_{}, strides_{}, data_(nullptr), shared_data_(data_) {};
 
     // copy constructor
     ndarray_impl(const ndarray_impl<value_type, container_type> &arr) :
-    size_(arr.size_), data_(new value_type[size_]), shape_(arr.shape_), strides_(arr.strides_) {
+    size_(arr.size_), shape_(arr.shape_), strides_(arr.strides_), data_(new value_type[size_]), shared_data_(data_) {
       std::copy(arr.data_, arr.data_+size_, data_);
     };
 
@@ -46,13 +47,11 @@ namespace cnumpy {
     }
 
     // destructor
-    ~ndarray_impl() {
-      delete[] data_;
-    }
+    ~ndarray_impl() {}
 
     ndarray_impl(const container_type &shape) :
     size_(std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>())),
-    data_(new value_type[size_]), shape_(shape), strides_(shape) {
+    shape_(shape), strides_(shape), data_(new value_type[size_]), shared_data_(data_) {
       std::exclusive_scan(shape.rbegin(), shape.rend(), strides_.rbegin(), 1, std::multiplies<size_t>());
     }
 
@@ -106,18 +105,48 @@ namespace cnumpy {
       return const_cast<value_type &>(static_cast<const ndarray_impl<value_type, container_type> &>(*this)(ints...));
     }
 
+    // utilities
+    template<class Container_>
+    ndarray_impl<value_type, Container_> make_shared(const Container_ &shape) {
+      size_t size = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
+      if (size != size_)
+        throw std::runtime_error("ndarray_impl<T, Container>::make_shared(): sizes do not match");
+
+      ndarray_impl<value_type, Container_> arr;
+      arr.size_ = size;
+      arr.shape_ = shape;
+      arr.strides_ = shape;
+      std::exclusive_scan(shape.rbegin(), shape.rend(), arr.strides_.rbegin(), 1, std::multiplies<size_t>());
+
+      arr.data_ = data_;
+      arr.shared_data_ = shared_data_;
+
+      return arr;
+    }
+
+    template<class NDArray, typename... Ints>
+    NDArray make_shared(Ints... ints) {
+      static_assert(std::is_same<ndarray_impl<typename NDArray::value_type, typename NDArray::container_type>, NDArray>());
+      static_assert(std::is_same<T, typename NDArray::value_type>());
+      static_assert((std::is_integral<Ints>() && ...));
+      return make_shared(typename NDArray::container_type{size_t(ints)...});
+    }
+
     friend void swap(ndarray_impl<value_type, container_type> &first, ndarray_impl<value_type, container_type> &second) {
       using std::swap;
       swap(first.size_, second.size_);
-      swap(first.data_, second.data_);
       swap(first.shape_, second.shape_);
       swap(first.strides_, second.strides_);
+      swap(first.data_, second.data_);
+      swap(first.shared_data_, second.shared_data_);
     }
 
   private:
     size_t size_;
-    value_type *data_;
     container_type shape_, strides_;
+
+    value_type *data_;
+    std::shared_ptr<value_type[]> shared_data_;
   };
 
   template<class T, size_t N = size_t(-1)>
