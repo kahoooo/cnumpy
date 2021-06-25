@@ -3,10 +3,10 @@
 #include <algorithm>    // copy, swap
 #include <array>
 #include <functional>   // multiplies
-#include <limits>       // numeric_limits
 #include <memory>       // shared_ptr
 #include <numeric>      // accumulate, exclusive_scan
-#include <type_traits>  // conditional_t
+#include <stdexcept>    // runtime_error
+#include <type_traits>  // conditional_t, is_integral, is_same
 #include <vector>
 
 namespace cnumpy {
