@@ -111,10 +111,23 @@ ndarray<int, 3> another_three_d_farray_moved = ndarray<int, 3>(2, 3, 4);
 
 Indexing can be achieved by providing indices as an `array<size_t, N>` for f-arrays or a `vector<size_t>` for v-arrays to `operator[]`. Alternatively, pass the indices as separated arguments to `operator()`. Unspecified indices are implicitly set to zeros.
 ```c++
-&three_d_farray[{i, j, 0, 0}] == &three_d_farray[{i, j}]; // returns true;
-&three_d_farray(i, j, k, 0) == &three_d_farray(i, j, k);  // returns true;
+&three_d_farray[{i, j, 0, 0}] == &three_d_farray[{i, j}]; // returns true
+&three_d_farray(i, j, k, 0) == &three_d_farray(i, j, k);  // returns true
 ```
 
-#### Reshaping, Slicing, Shared Memory...
+#### Reshaping
+
+To reshape an array, simply call the `reshape` member function and pass the shape as an `array<size_t, N>` for f-arrays or a `vector<size_t>` for v-arrays. The function also support variadic arguments. Reshaping requires the total number of elements to be unchanged. Additionally, the number of dimensions of v-arrays can be changed by providing a shape with a different number of dimensions.
+```c++
+three_d_farray.reshape(6, 2, 2);
+four_d_varray.reshape(6, 4, 5);   // becomes 3D
+```
+
+#### Shared Memory
+
+Sometimes, one may want to transform v-arrays to f-arrays or to reshape `const` arrays without deep copying. This can be achieved using shared memory arrays. To construct a shared array, call the `make_shared` member function and pass the shape in a appropriate container, i.e., `array<size_t, N>` for f-arrays and `vector<size_t>` for v-arrays. Another way is to pass the shape as variadic arguments to a specialized `make_shared` function as follows:
+```c++
+auto four_d_farray = another_four_d_varray.make_shared(2, 3, 4, 5);
+```
 
 (To be continued...)
