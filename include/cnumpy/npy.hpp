@@ -53,11 +53,12 @@ namespace cnumpy {
       char buffer[6];
       if (iostrm_.read(buffer, 6).fail())
         throw std::runtime_error("NPY::load(): failed read");
-      if (strncmp(magic_, buffer, 6))
+      if (strncmp(magic_, buffer, 6) != 0)
         throw std::runtime_error("NPY::load(): magic does not match");
 
       // The next 1 byte is an unsigned byte: the major version number of the file format, e.g. \x01.
-      // The next 1 byte is an unsigned byte: the minor version number of the file format, e.g. \x00. Note: the version of the file format is not tied to the version of the numpy package.
+      // The next 1 byte is an unsigned byte: the minor version number of the file format, e.g. \x00. Note: the version
+      // of the file format is not tied to the version of the numpy package.
       char major, minor;
       read_stream(iostrm_, major);
       read_stream(iostrm_, minor);
@@ -66,7 +67,10 @@ namespace cnumpy {
 
       // (v1.0) The next 2 bytes form a little-endian unsigned short int: the length of the header data HEADER_LEN.
       // (v2.0) The next 4 bytes form a little-endian unsigned int: the length of the header data HEADER_LEN.
-      // The next HEADER_LEN bytes form the header data describing the array's format. It is an ASCII string which contains a Python literal expression of a dictionary. It is terminated by a newline (\n) and padded with spaces (\x20) to make the total of len(magic string) + 2 + len(length) + HEADER_LEN be evenly divisible by 64 for alignment purposes.
+      // The next HEADER_LEN bytes form the header data describing the array's format. It is an ASCII string which
+      // contains a Python literal expression of a dictionary. It is terminated by a newline (\n) and padded with spaces
+      // (\x20) to make the total of len(magic string) + 2 + len(length) + HEADER_LEN be evenly divisible by 64 for
+      // alignment purposes.
       size_t headerlen;
       if (major == 1 && minor == 0) {
         uint16_t len;
@@ -92,11 +96,13 @@ namespace cnumpy {
       // An object that can be passed as an argument to the numpy.dtype constructor to create the array's dtype.
       //
       // "fortran_order" bool
-      // Whether the array data is Fortran-contiguous or not. Since Fortran-contiguous arrays are a common form of non-C-contiguity, we allow them to be written directly to disk for efficiency.
+      // Whether the array data is Fortran-contiguous or not. Since Fortran-contiguous arrays are a common form of
+      // non-C-contiguity, we allow them to be written directly to disk for efficiency.
       //
       // "shape" tuple of int
       // The shape of the array.
-      // For repeatability and readability, the dictionary keys are sorted in alphabetic order. This is for convenience only. A writer SHOULD implement this if possible. A reader MUST NOT depend on this.
+      // For repeatability and readability, the dictionary keys are sorted in alphabetic order. This is for convenience
+      // only. A writer SHOULD implement this if possible. A reader MUST NOT depend on this.
       auto parse_header = [](const std::string &header) {
         size_t d = header.find("'descr'");
         size_t ds = header.find('\'', d+7);
@@ -133,7 +139,10 @@ namespace cnumpy {
         reverse(shape.begin(), shape.end());
       }
 
-      // Following the header comes the array data. If the dtype contains Python objects (i.e. dtype.hasobject is True), then the data is a Python pickle of the array. Otherwise the data is the contiguous (either C- or Fortran-, depending on fortran_order) bytes of the array. Consumers can figure out the number of bytes by multiplying the number of elements given by the shape (noting that shape=() means there is 1 element) by dtype.itemsize.
+      // Following the header comes the array data. If the dtype contains Python objects (i.e. dtype.hasobject is True),
+      // then the data is a Python pickle of the array. Otherwise the data is the contiguous (either C- or Fortran-,
+      // depending on fortran_order) bytes of the array. Consumers can figure out the number of bytes by multiplying the
+      // number of elements given by the shape (noting that shape=() means there is 1 element) by dtype.itemsize.
       ndarray<T> arr(shape);
       T *ptr = arr.data();
       size_t sz = arr.size() * sizeof(T);
@@ -177,21 +186,27 @@ namespace cnumpy {
         throw std::runtime_error("NPY::save(): failed write");
 
       // The next 1 byte is an unsigned byte: the major version number of the file format, e.g. \x01.
-      // The next 1 byte is an unsigned byte: the minor version number of the file format, e.g. \x00. Note: the version of the file format is not tied to the version of the numpy package.
+      // The next 1 byte is an unsigned byte: the minor version number of the file format, e.g. \x00. Note: the version
+      // of the file format is not tied to the version of the numpy package.
       // (v1.0) The next 2 bytes form a little-endian unsigned short int: the length of the header data HEADER_LEN.
       // (v2.0) The next 4 bytes form a little-endian unsigned int: the length of the header data HEADER_LEN.
-      // The next HEADER_LEN bytes form the header data describing the array's format. It is an ASCII string which contains a Python literal expression of a dictionary. It is terminated by a newline (\n) and padded with spaces (\x20) to make the total of len(magic string) + 2 + len(length) + HEADER_LEN be evenly divisible by 64 for alignment purposes.
+      // The next HEADER_LEN bytes form the header data describing the array's format. It is an ASCII string which
+      // contains a Python literal expression of a dictionary. It is terminated by a newline (\n) and padded with spaces
+      // (\x20) to make the total of len(magic string) + 2 + len(length) + HEADER_LEN be evenly divisible by 64 for
+      // alignment purposes.
       // The dictionary contains three keys:
       //
       // "descr" dtype.descr
       // An object that can be passed as an argument to the numpy.dtype constructor to create the array's dtype.
       //
       // "fortran_order" bool
-      // Whether the array data is Fortran-contiguous or not. Since Fortran-contiguous arrays are a common form of non-C-contiguity, we allow them to be written directly to disk for efficiency.
+      // Whether the array data is Fortran-contiguous or not. Since Fortran-contiguous arrays are a common form of
+      // non-C-contiguity, we allow them to be written directly to disk for efficiency.
       //
       // "shape" tuple of int
       // The shape of the array.
-      // For repeatability and readability, the dictionary keys are sorted in alphabetic order. This is for convenience only. A writer SHOULD implement this if possible. A reader MUST NOT depend on this.
+      // For repeatability and readability, the dictionary keys are sorted in alphabetic order. This is for convenience
+      // only. A writer SHOULD implement this if possible. A reader MUST NOT depend on this.
       auto make_header = [](const std::string &descr, bool fortran_order, const typename NDArray::container_type &shape) {
         std::string header;
         header += "{'descr': '";
@@ -207,7 +222,8 @@ namespace cnumpy {
       };
 
       char major = version[0], minor = version[1];
-      std::string header = make_header(std::string() + endianness_() + dtype<typename NDArray::value_type>() + std::to_string(sizeof(typename NDArray::value_type)), false, arr.shape());
+      std::string header = make_header(std::string() + endianness_() + dtype<typename NDArray::value_type>()
+              + std::to_string(sizeof(typename NDArray::value_type)), false, arr.shape());
       if (major == 0 && minor == 0) {
         size_t padding = 63 - ((6 + 2 + 2 + header.length()) & 63);
         if (header.length() + padding + 1 < 65536)
@@ -240,7 +256,10 @@ namespace cnumpy {
       if (iostrm_.write(header.c_str(), header.length()).fail())
         throw std::runtime_error("NPY::save(): failed write");
 
-      // Following the header comes the array data. If the dtype contains Python objects (i.e. dtype.hasobject is True), then the data is a Python pickle of the array. Otherwise the data is the contiguous (either C- or Fortran-, depending on fortran_order) bytes of the array. Consumers can figure out the number of bytes by multiplying the number of elements given by the shape (noting that shape=() means there is 1 element) by dtype.itemsize.
+      // Following the header comes the array data. If the dtype contains Python objects (i.e. dtype.hasobject is True),
+      // then the data is a Python pickle of the array. Otherwise the data is the contiguous (either C- or Fortran-,
+      // depending on fortran_order) bytes of the array. Consumers can figure out the number of bytes by multiplying the
+      // number of elements given by the shape (noting that shape=() means there is 1 element) by dtype.itemsize.
       const typename NDArray::value_type *ptr = arr.data();
       size_t sz = arr.size() * sizeof(typename NDArray::value_type);
       if (iostrm_.write((char *)ptr, sz).fail())
@@ -256,7 +275,7 @@ namespace cnumpy {
     }
 
   private:
-    char endianness_() {
+    static char endianness_() {
       union {
           uint16_t s;
           char c[2];
@@ -272,30 +291,30 @@ namespace cnumpy {
     std::iostream iostrm_;
   };
 
-  template<> constexpr char NPY::dtype<bool>() { return 'b'; };
+  template<> constexpr char NPY::dtype<bool>() { return 'b'; }
 
-  template<> constexpr char NPY::dtype<char>() { return 'i'; };
-  template<> constexpr char NPY::dtype<short>() { return 'i'; };
-  template<> constexpr char NPY::dtype<int>() { return 'i'; };
-  template<> constexpr char NPY::dtype<long>() { return 'i'; };
-  template<> constexpr char NPY::dtype<long long>() { return 'i'; };
+  template<> constexpr char NPY::dtype<char>() { return 'i'; }
+  template<> constexpr char NPY::dtype<short>() { return 'i'; }
+  template<> constexpr char NPY::dtype<int>() { return 'i'; }
+  template<> constexpr char NPY::dtype<long>() { return 'i'; }
+  template<> constexpr char NPY::dtype<long long>() { return 'i'; }
 
-  template<> constexpr char NPY::dtype<unsigned char>() { return 'u'; };
-  template<> constexpr char NPY::dtype<unsigned short>() { return 'u'; };
-  template<> constexpr char NPY::dtype<unsigned int>() { return 'u'; };
-  template<> constexpr char NPY::dtype<unsigned long>() { return 'u'; };
-  template<> constexpr char NPY::dtype<unsigned long long>() { return 'u'; };
+  template<> constexpr char NPY::dtype<unsigned char>() { return 'u'; }
+  template<> constexpr char NPY::dtype<unsigned short>() { return 'u'; }
+  template<> constexpr char NPY::dtype<unsigned int>() { return 'u'; }
+  template<> constexpr char NPY::dtype<unsigned long>() { return 'u'; }
+  template<> constexpr char NPY::dtype<unsigned long long>() { return 'u'; }
 
-  template<> constexpr char NPY::dtype<float>() { return 'f'; };
-  template<> constexpr char NPY::dtype<double>() { return 'f'; };
-  template<> constexpr char NPY::dtype<long double>() { return 'f'; };
+  template<> constexpr char NPY::dtype<float>() { return 'f'; }
+  template<> constexpr char NPY::dtype<double>() { return 'f'; }
+  template<> constexpr char NPY::dtype<long double>() { return 'f'; }
 
-  template<> constexpr char NPY::dtype<std::complex<float>>() { return 'c'; };
-  template<> constexpr char NPY::dtype<std::complex<double>>() { return 'c'; };
-  template<> constexpr char NPY::dtype<std::complex<long double>>() { return 'c'; };
+  template<> constexpr char NPY::dtype<std::complex<float>>() { return 'c'; }
+  template<> constexpr char NPY::dtype<std::complex<double>>() { return 'c'; }
+  template<> constexpr char NPY::dtype<std::complex<long double>>() { return 'c'; }
 
-  template<> constexpr size_t NPY::typesize<std::complex<float>>() { return sizeof(float); };
-  template<> constexpr size_t NPY::typesize<std::complex<double>>() { return sizeof(double); };
-  template<> constexpr size_t NPY::typesize<std::complex<long double>>() { return sizeof(long double); };
+  template<> constexpr size_t NPY::typesize<std::complex<float>>() { return sizeof(float); }
+  template<> constexpr size_t NPY::typesize<std::complex<double>>() { return sizeof(double); }
+  template<> constexpr size_t NPY::typesize<std::complex<long double>>() { return sizeof(long double); }
 
 }

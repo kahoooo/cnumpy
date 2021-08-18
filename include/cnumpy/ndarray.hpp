@@ -32,7 +32,7 @@ namespace cnumpy {
     };
 
     // move constructor
-    ndarray_impl(ndarray_impl<value_type, container_type> &&arr) : ndarray_impl() {
+    ndarray_impl(ndarray_impl<value_type, container_type> &&arr)  noexcept : ndarray_impl() {
       swap(*this, arr);
     }
 
@@ -43,22 +43,22 @@ namespace cnumpy {
     }
 
     // move-assignment operator
-    ndarray_impl &operator=(ndarray_impl<value_type, container_type> &&arr) {
+    ndarray_impl &operator=(ndarray_impl<value_type, container_type> &&arr)  noexcept {
       swap(*this, arr);
       return *this;
     }
 
     // destructor
-    ~ndarray_impl() {}
+    ~ndarray_impl() = default;
 
-    ndarray_impl(const container_type &shape) :
+    explicit ndarray_impl(const container_type &shape) :
     size_(std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>())),
     shape_(shape), strides_(shape), data_(new value_type[size_]), shared_data_(data_) {
       std::exclusive_scan(shape.rbegin(), shape.rend(), strides_.rbegin(), 1, std::multiplies<size_t>());
     }
 
     template<typename... Ints>
-    ndarray_impl(Ints... ints) : ndarray_impl(container_type{size_t(ints)...}) {
+    explicit ndarray_impl(Ints... ints) : ndarray_impl(container_type{size_t(ints)...}) {
       static_assert((std::is_integral<Ints>() && ...));
     }
 
