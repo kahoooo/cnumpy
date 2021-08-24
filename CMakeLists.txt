@@ -23,3 +23,7 @@ add_test(NAME test_ndarray_misc COMMAND test_ndarray_misc)
 add_executable(test_npy_saveload tests/npy_saveload.cpp)
 target_include_directories(test_npy_saveload PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME test_npy_saveload COMMAND test_npy_saveload)
+
+find_package(PythonInterp REQUIRED)
+add_test(NAME test_npy_saveload_python COMMAND ${PYTHON_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/npy_saveload.py ${CMAKE_CURRENT_BINARY_DIR})

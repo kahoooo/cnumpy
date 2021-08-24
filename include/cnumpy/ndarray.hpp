@@ -23,9 +23,6 @@ namespace cnumpy {
 
         static_assert(std::is_same<typename container_type::value_type, size_t>());
 
-        // default constructor
-        ndarray_impl() : size_(0), shape_{}, strides_{}, data_(nullptr), shared_data_(data_) {};
-
         // copy constructor
         ndarray_impl(const ndarray_impl<value_type, container_type> &arr) :
                 size_(arr.size_), shape_(arr.shape_), strides_(arr.strides_), data_(new value_type[size_]),
@@ -156,7 +153,7 @@ namespace cnumpy {
         }
 
     private:
-        size_t size_;
+        size_t size_{};
         container_type shape_, strides_;
 
         value_type *data_;

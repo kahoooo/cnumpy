@@ -5,10 +5,11 @@ using namespace std;
 using namespace cnumpy;
 
 int main() {
-    // default constructor, empty array expected, destruct immediately
+    // default constructor, one element expected since ndim == 0, destruct immediately
     {
         ndarray<int> arr;
-        assert(arr.size() == 0);
+        assert(arr.size() == 1);
+        assert(&arr() == arr.data());
     }
 
     // constructor with explicit shape array, 120 elements expected

@@ -115,7 +115,9 @@ namespace cnumpy {
                 size_t s = header.find("'shape'");
                 size_t ss = header.find('(', s + 7);
                 size_t se = header.find(')', ss + 1);
-                std::string shape_str = header.substr(ss + 1, se - ss - 1) + ',';
+                std::string shape_str = header.substr(ss + 1, se - ss - 1);
+                if (!shape_str.empty() && shape_str.back() != ',')
+                    shape_str += ',';
                 size_t last = 0;
                 std::vector<size_t> shape;
                 while (true) {
@@ -219,7 +221,10 @@ namespace cnumpy {
                 header += ", 'shape': (";
                 for (auto s : shape)
                     header += std::to_string(s) + ", ";
-                header.resize(header.length() - 2);
+                if (shape.size() > 1)
+                    header.resize(header.length() - 2);
+                else if (shape.size() == 1)
+                    header.resize(header.length() - 1);
                 header += "), }";
                 return header;
             };
